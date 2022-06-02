@@ -13,12 +13,14 @@ def read_from_file(filepath):
         raise ValueError(form_error_msg("Invalid file extension."))
     return pd.read_csv(filepath)
 
+
 def split_data(data, fraction):
     if is_data_frame(data) is False:
         raise ValueError(form_error_msg("Invalid parameter data."))
     if fraction <= 0 or fraction >= 1:
         raise ValueError(form_error_msg("Invalid parameter test_proportion."))
     return data.sample(frac=fraction)
+
 
 def remove_data(data, indexs):
     if is_data_frame(data) is False:
@@ -66,6 +68,7 @@ def filter_col_data(data, cols_array):
 def is_data_frame(data):
     return isinstance(data, pd.DataFrame)
 
+
 def is_integer(var):
     return isinstance(var, int)
 
@@ -81,6 +84,7 @@ def one_hot_encode_cols(data, cols):
         raise ValueError(form_error_msg("Invalid parameter cols."))
     transformer = make_column_transformer((OneHotEncoder(), cols), remainder="passthrough")
     return transformer.fit_transform(data)
+
 
 def map_breast_surg_type(code):
     '''
@@ -111,14 +115,3 @@ def map_breast_surg_type(code):
         return "Mastectomy"
     else:
         raise ValueError(form_error_msg("Invalid parameter code."))
-
-
-
-
-
-
-
-
-
-
-

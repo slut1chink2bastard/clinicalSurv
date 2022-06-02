@@ -22,10 +22,8 @@ from pycox.datasets import metabric
 from pycox.models import CoxPH
 from pycox.evaluation import EvalSurv
 
-
 np.random.seed(1234)
 _ = torch.manual_seed(123)
-
 
 # ## Dataset
 # 
@@ -99,19 +97,16 @@ print(Utils.get_data_frame_col_names(validate_data))
 print("-----------The null value summary-----------")
 print(validate_data.isnull().sum())
 
-
 df_train = metabric.read_df()
 df_test = df_train.sample(frac=0.2)
 df_train = df_train.drop(df_test.index)
 df_val = df_train.sample(frac=0.2)
 df_train = df_train.drop(df_val.index)
 
-
 # In[5]:
 
 
 df_train.head()
-
 
 # ## Feature transforms
 # We have 9 covariates, in addition to the durations and event indicators.
@@ -129,14 +124,12 @@ leave = [(col, None) for col in cols_leave]
 
 x_mapper = DataFrameMapper(standardize + leave)
 
-
 # In[7]:
 
 
 x_train = x_mapper.fit_transform(df_train).astype('float32')
 x_val = x_mapper.transform(df_val).astype('float32')
 x_test = x_mapper.transform(df_test).astype('float32')
-
 
 # We need no label transforms
 
@@ -148,7 +141,6 @@ y_train = get_target(df_train)
 y_val = get_target(df_val)
 durations_test, events_test = get_target(df_test)
 val = x_val, y_val
-
 
 # ## Neural net
 # 
@@ -170,7 +162,6 @@ output_bias = False
 net = tt.practical.MLPVanilla(in_features, num_nodes, out_features, batch_norm,
                               dropout, output_bias=output_bias)
 
-
 # ## Training the model
 # 
 # To train the model we need to define an optimizer. You can choose any `torch.optim` optimizer, but here we instead use one from `tt.optim` as it has some added functionality.
@@ -181,7 +172,6 @@ net = tt.practical.MLPVanilla(in_features, num_nodes, out_features, batch_norm,
 
 model = CoxPH(net, tt.optim.Adam)
 
-
 # In[11]:
 
 
@@ -189,12 +179,10 @@ batch_size = 256
 lrfinder = model.lr_finder(x_train, y_train, batch_size, tolerance=10)
 _ = lrfinder.plot()
 
-
 # In[12]:
 
 
 lrfinder.get_best_lr()
-
 
 # Often, this learning rate is a little high, so we instead set it manually to 0.01
 
@@ -202,7 +190,6 @@ lrfinder.get_best_lr()
 
 
 model.optimizer.set_lr(0.01)
-
 
 # We include the `EarlyStopping` callback to stop training when the validation loss stops improving. After training, this callback will also load the best performing model in terms of validation loss.
 
@@ -213,18 +200,15 @@ epochs = 512
 callbacks = [tt.callbacks.EarlyStopping()]
 verbose = True
 
-
 # In[15]:
 
 
-log = model.fit(x_train, y_train, batch_size, epochs, callbacks, verbose,val_data=val, val_batch_size=batch_size)
-
+log = model.fit(x_train, y_train, batch_size, epochs, callbacks, verbose, val_data=val, val_batch_size=batch_size)
 
 # In[16]:
 
 
 _ = log.plot()
-
 
 # We can get the partial log-likelihood
 
@@ -232,7 +216,6 @@ _ = log.plot()
 
 
 model.partial_log_likelihood(*val).mean()
-
 
 # ## Prediction
 # 
@@ -248,12 +231,10 @@ model.partial_log_likelihood(*val).mean()
 
 _ = model.compute_baseline_hazards()
 
-
 # In[19]:
 model.predict(x_test)
 
 surv = model.predict_surv_df(x_test)
-
 
 # In[20]:
 
@@ -261,7 +242,6 @@ surv = model.predict_surv_df(x_test)
 surv.iloc[:, :5].plot()
 plt.ylabel('S(t | x)')
 _ = plt.xlabel('Time')
-
 
 # ## Evaluation
 # 
@@ -272,12 +252,10 @@ _ = plt.xlabel('Time')
 
 ev = EvalSurv(surv, durations_test, events_test, censor_surv='km')
 
-
 # In[22]:
 
 
 ev.concordance_td()
-
 
 # In[23]:
 
@@ -285,21 +263,14 @@ ev.concordance_td()
 time_grid = np.linspace(durations_test.min(), durations_test.max(), 100)
 _ = ev.brier_score(time_grid).plot()
 
-
 # In[24]:
 
 
 ev.integrated_brier_score(time_grid)
-
 
 # In[25]:
 
 
 ev.integrated_nbll(time_grid)
 
-
 # In[ ]:
-
-
-
-
