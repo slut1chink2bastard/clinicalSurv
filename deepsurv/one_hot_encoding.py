@@ -35,8 +35,7 @@ df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
 # map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
 df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
 
-# map "End Calc Vital Status (Adjusted)" according to map_event_code
-df = Utils.map_one_col_data(df, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
+
 
 # take a look of the data info again
 print("------------------After filtering and Mapping------------------")
@@ -216,9 +215,9 @@ print(callbacks)
 # After this, we are ready to actually fit our model (as any Keras model).
 
 # %%
-epochs = 10
+epochs = 3
 history = dsk.fit(X_train, Y_train,
-                  batch_size=n_patients_train,
+                  # batch_size=500,
                   epochs=epochs,
                   callbacks=callbacks,
                   shuffle=False)
