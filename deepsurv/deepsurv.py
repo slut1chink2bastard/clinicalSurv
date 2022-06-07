@@ -1,10 +1,10 @@
 # # Cox-PH and DeepSurv
-# 
+#
 # In this script we will train the [DeepSurv](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0482-1).
 # I will use my own dataset from SEER
-# 
+#
 # A more detailed introduction to the `pycox` package can be found in [this notebook](https://nbviewer.jupyter.org/github/havakv/pycox/blob/master/examples/01_introduction.ipynb) about the `LogisticHazard` method.
-# 
+#
 # The main benefit Cox-CC (and the other Cox methods) has over Logistic-Hazard is that it is a continuous-time method, meaning we do not need to discretize the time scale.
 
 # In[1]:
@@ -15,9 +15,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn_pandas import DataFrameMapper
 import utilities as Utils
+
 import torch
 import torchtuples as tt
 
+import breast_utilities as br_utils
 from pycox.datasets import metabric
 from pycox.models import CoxPH
 from pycox.evaluation import EvalSurv
@@ -26,7 +28,7 @@ np.random.seed(1234)
 _ = torch.manual_seed(123)
 
 # ## Dataset
-# 
+#
 # We load the METABRIC data set and split in train, test and validation.
 
 # In[4]:
@@ -45,25 +47,49 @@ df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status 
 # take a look of the data info
 Utils.print_data_frame_info(df)
 
-df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "ICD-O-3 Hist/behav",
+# according to https://seer.cancer.gov/icd-o-3/sitetype.icdo3.20220429.pdf
+duct_carcinoma_array = ['8500/3: Infiltrating duct carcinoma, NOS', '8501/3: Comedocarcinoma, NOS',
+                        '8502/3: Secretory carcinoma of breast',
+                        '8503/3: Intraductal papillary adenocarcinoma with invasion',
+                        '8504/3: Intracystic carcinoma, NOS', '8507/3: Ductal carcinoma, micropapillary']
+# according to https://seer.cancer.gov/icd-o-3/sitetype.icdo3.20220429.pdf
+lobular_and_other_ductal_array = ['8520/3: Lobular carcinoma, NOS', '8521/3: Infiltrating ductular carcinoma',
+                                  '8522/3: Infiltrating duct and lobular carcinoma',
+                                  '8523/3: Infiltrating duct mixed with other types of carcinoma',
+                                  '8524/3: Infiltrating lobular mixed with other types of carcinoma',
+                                  '8525/3: Polymorphous low grade adenocarcinoma']
+duct_lobular_array = duct_carcinoma_array + lobular_and_other_ductal_array
+
+# filter the ICD-O-3 Hist/behav whose type is DUCT CARCINOM and LOBULAR AND OTHER DUCTAL CA
+df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
+
+# map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
+df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
+
+# map "End Calc Vital Status (Adjusted)" according to map_event_code
+df = Utils.map_one_col_data(df, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
+
+# take a look of the data info again
+print("------------------After filtering and Mapping------------------")
+Utils.print_data_frame_info(df)
+df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
+                                "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)",
                                 "Breast - Adjusted AJCC 6th N (1988-2015)",
-                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS extension (2004-2015)",
-                                "CS lymph nodes (2004-2015)", "CS mets at dx (2004-2015)",
-                                "Histologic Type ICD-O-3", "Laterality", "Breast Subtype (2010+)",
-                                "ER Status Recode Breast Cancer (1990+)",
-                                "PR Status Recode Breast Cancer (1990+)", "Derived HER2 Recode (2010+)",
+                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
+                                "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
+                                "Laterality", "Breast Subtype (2010+)",
                                 "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
-                                "Chemotherapy recode (yes, no/unk)", "Marital status at diagnosis"],
-                    columns=["Age recode with <1 year olds", "Behavior code ICD-O-3",
+                                "Chemotherapy recode (yes, no/unk)"],
+                    columns=["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
+                             "ICD-O-3 Hist/behav",
                              "Breast - Adjusted AJCC 6th T (1988-2015)",
                              "Breast - Adjusted AJCC 6th N (1988-2015)",
-                             "Breast - Adjusted AJCC 6th M (1988-2015)", "CS extension (2004-2015)",
-                             "CS lymph nodes (2004-2015)", "CS mets at dx (2004-2015)", "Histologic Type ICD-O-3",
-                             "Laterality", "Breast Subtype (2010+)", "ER Status Recode Breast Cancer (1990+)",
-                             "PR Status Recode Breast Cancer (1990+)", "Derived HER2 Recode (2010+)",
+                             "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
+                             "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
+                             "Laterality", "Breast Subtype (2010+)",
                              "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
-                             "Chemotherapy recode (yes, no/unk)", "Marital status at diagnosis"])
+                             "Chemotherapy recode (yes, no/unk)"])
 full_data = df
 
 test_data = Utils.split_data(full_data, 0.2)
@@ -114,7 +140,7 @@ df_train.head()
 
 # ## Feature transforms
 # We have 9 covariates, in addition to the durations and event indicators.
-# 
+#
 # We will standardize the 5 numerical covariates, and leave the binary variables as is. As variables needs to be of type `'float32'`, as this is required by pytorch.
 
 # In[6]:
@@ -140,17 +166,17 @@ x_test = x_mapper.transform(df_test).astype('float32')
 # In[8]:
 
 
-get_target = lambda df: (df['duration'].values, df['event'].values)
+get_target = lambda df: (df['duration'].df, df['event'].df)
 y_train = get_target(df_train)
 y_val = get_target(df_val)
 durations_test, events_test = get_target(df_test)
 val = x_val, y_val
 
 # ## Neural net
-# 
-# We create a simple MLP with two hidden layers, ReLU activations, batch norm and dropout. 
+#
+# We create a simple MLP with two hidden layers, ReLU activations, batch norm and dropout.
 # Here, we just use the `torchtuples.practical.MLPVanilla` net to do this.
-# 
+#
 # Note that we set `out_features` to 1, and that we have not `output_bias`.
 
 # In[9]:
@@ -167,7 +193,7 @@ net = tt.practical.MLPVanilla(in_features, num_nodes, out_features, batch_norm,
                               dropout, output_bias=output_bias)
 
 # ## Training the model
-# 
+#
 # To train the model we need to define an optimizer. You can choose any `torch.optim` optimizer, but here we instead use one from `tt.optim` as it has some added functionality.
 # We use the `Adam` optimizer, but instead of choosing a learning rate, we will use the scheme proposed by [Smith 2017](https://arxiv.org/pdf/1506.01186.pdf) to find a suitable learning rate with `model.lr_finder`. See [this post](https://towardsdatascience.com/finding-good-learning-rate-and-the-one-cycle-policy-7159fe1db5d6) for an explanation.
 
@@ -222,12 +248,12 @@ _ = log.plot()
 model.partial_log_likelihood(*val).mean()
 
 # ## Prediction
-# 
+#
 # For evaluation we first need to obtain survival estimates for the test set.
 # This can be done with `model.predict_surv` which returns an array of survival estimates, or with `model.predict_surv_df` which returns the survival estimates as a dataframe.
-# 
-# However, as `CoxPH` is semi-parametric, we first need to get the non-parametric baseline hazard estimates with `compute_baseline_hazards`. 
-# 
+#
+# However, as `CoxPH` is semi-parametric, we first need to get the non-parametric baseline hazard estimates with `compute_baseline_hazards`.
+#
 # Note that for large datasets the `sample` argument can be used to estimate the baseline hazard on a subset.
 
 # In[18]:
@@ -248,7 +274,7 @@ plt.ylabel('S(t | x)')
 _ = plt.xlabel('Time')
 
 # ## Evaluation
-# 
+#
 # We can use the `EvalSurv` class for evaluation the concordance, brier score and binomial log-likelihood. Setting `censor_surv='km'` means that we estimate the censoring distribution by Kaplan-Meier on the test set.
 
 # In[21]:

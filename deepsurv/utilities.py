@@ -27,6 +27,36 @@ def remove_data(data, indexs):
         raise ValueError(form_error_msg("Invalid parameter data."))
     data.drop(indexs)
 
+def select_data_from_values(data, column, value_list):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    if column not in data.columns:
+        raise ValueError(form_error_msg("data doesn't contains parameter column."))
+    if is_valid_list(value_list) is False:
+        raise ValueError(form_error_msg("Invalid parameter value_list."))
+    return data.loc[data[column].isin(value_list)]
+
+def map_one_col_data(data, column, map_func):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    if column not in data.columns:
+        raise ValueError(form_error_msg("data doesn't contains parameter column."))
+    if callable(map_func) is False:
+        raise ValueError(form_error_msg("Invalid parameter map_func."))
+    data[column] = data[column].map(map_func)
+    return data
+
+
+
+
+
+
+
+
 
 def get_function_name():
     currentframe = inspect.currentframe()

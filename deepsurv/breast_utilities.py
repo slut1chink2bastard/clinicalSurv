@@ -30,3 +30,16 @@ def map_breast_surg_type(code):
         return "Mastectomy"
     else:
         raise ValueError(form_error_msg("Invalid parameter code."))
+
+def map_event_code(event):
+    '''
+    this map method is based on survival analysis
+    TODO:unit test in the future
+    '''
+    if event is False:
+        raise ValueError(form_error_msg("Invalid parameter event."))
+    if event.lower() == "dead":
+        return 1
+    return 0
+
+
