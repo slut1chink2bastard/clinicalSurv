@@ -25,7 +25,7 @@ from pycox.models import CoxPH
 from pycox.evaluation import EvalSurv
 
 np.random.seed(1234)
-_ = torch.manual_seed(123)
+_ = torch.manual_seed(999)
 
 # ## Dataset
 #
@@ -104,7 +104,7 @@ print(Utils.get_data_frame_col_names(test_data))
 print("-----------The null value summary-----------")
 print(test_data.isnull().sum())
 
-validate_data = Utils.split_data(full_data, 0.2)
+validate_data = Utils.split_data(full_data, 0.1)
 Utils.remove_data(full_data, validate_data.index)
 print("-----------Validating Data-----------")
 print("-----------The row number-----------")
@@ -146,8 +146,8 @@ df_train.head()
 # In[6]:
 
 
-cols_standardize = ['x0', 'x1', 'x2', 'x3', 'x8']
-cols_leave = ['x4', 'x5', 'x6', 'x7']
+cols_standardize = []
+cols_leave = Utils.get_data_frame_col_names_list(train_data)
 
 standardize = [([col], StandardScaler()) for col in cols_standardize]
 leave = [(col, None) for col in cols_leave]
@@ -157,19 +157,19 @@ x_mapper = DataFrameMapper(standardize + leave)
 # In[7]:
 
 
-x_train = x_mapper.fit_transform(df_train).astype('float32')
-x_val = x_mapper.transform(df_val).astype('float32')
-x_test = x_mapper.transform(df_test).astype('float32')
+x_train = x_mapper.fit_transform(train_data).astype('float32')
+x_val = x_mapper.transform(validate_data).astype('float32')
+x_test = x_mapper.transform(test_data).astype('float32')
 
 # We need no label transforms
 
 # In[8]:
 
 
-get_target = lambda df: (df['duration'].df, df['event'].df)
-y_train = get_target(df_train)
-y_val = get_target(df_val)
-durations_test, events_test = get_target(df_test)
+y_train = Utils.get_col_values(train_data,"Number of Intervals (Calculated)"),Utils.get_col_values(train_data,"End Calc Vital Status (Adjusted)")
+y_val = Utils.get_col_values(validate_data,"Number of Intervals (Calculated)"),Utils.get_col_values(validate_data,"End Calc Vital Status (Adjusted)")
+durations_test = Utils.get_col_values(test_data,"End Calc Vital Status (Adjusted)")
+events_test = Utils.get_col_values(test_data,"End Calc Vital Status (Adjusted)")
 val = x_val, y_val
 
 # ## Neural net
@@ -183,7 +183,7 @@ val = x_val, y_val
 
 
 in_features = x_train.shape[1]
-num_nodes = [32, 32]
+num_nodes = [62, 32]
 out_features = 1
 batch_norm = True
 dropout = 0.1
@@ -205,7 +205,7 @@ model = CoxPH(net, tt.optim.Adam)
 # In[11]:
 
 
-batch_size = 256
+batch_size = 10000
 lrfinder = model.lr_finder(x_train, y_train, batch_size, tolerance=10)
 _ = lrfinder.plot()
 
@@ -285,7 +285,8 @@ ev = EvalSurv(surv, durations_test, events_test, censor_surv='km')
 # In[22]:
 
 
-ev.concordance_td()
+td = ev.concordance_td()
+print(td)
 
 # In[23]:
 

@@ -27,6 +27,7 @@ def remove_data(data, indexs):
         raise ValueError(form_error_msg("Invalid parameter data."))
     data.drop(indexs)
 
+
 def select_data_from_values(data, column, value_list):
     if is_data_frame(data) is False:
         raise ValueError(form_error_msg("Invalid parameter data."))
@@ -37,6 +38,7 @@ def select_data_from_values(data, column, value_list):
     if is_valid_list(value_list) is False:
         raise ValueError(form_error_msg("Invalid parameter value_list."))
     return data.loc[data[column].isin(value_list)]
+
 
 def map_one_col_data(data, column, map_func):
     if is_data_frame(data) is False:
@@ -49,13 +51,6 @@ def map_one_col_data(data, column, map_func):
         raise ValueError(form_error_msg("Invalid parameter map_func."))
     data[column] = data[column].map(map_func)
     return data
-
-
-
-
-
-
-
 
 
 def get_function_name():
@@ -83,8 +78,22 @@ def get_data_frame_col_count(data_frame):
 
 def get_data_frame_col_names(data_frame):
     if is_data_frame(data_frame) is False:
-        raise ValueError(form_error_msg("Invalid parameter data."))
+        raise ValueError(form_error_msg("Invalid parameter data_frame."))
     return data_frame.columns
+
+
+def get_data_frame_col_names_list(data_frame):
+    if is_data_frame(data_frame) is False:
+        raise ValueError(form_error_msg("Invalid parameter data_frame."))
+    return list(data_frame.columns.values)
+
+
+def get_col_values(data, column):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    return data[column].values
 
 
 def filter_col_data(data, cols_array):
