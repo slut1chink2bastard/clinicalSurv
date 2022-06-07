@@ -1,45 +1,69 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-import os
+import breast_utilities as br_utils
+from sklearn.model_selection import train_test_split
 
-import Utilities as Utils
+import utilities as Utils
 import deepsurvk
-df = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)),"breast.csv"))
-
-df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Behavior code ICD-O-3",
+df = Utils.read_from_file("data/breast.csv")
+df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
+                                "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)", "Breast - Adjusted AJCC 6th N (1988-2015)",
-                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS tumor size (2004-2015)",
-                                "CS extension (2004-2015)", "CS lymph nodes (2004-2015)", "CS mets at dx (2004-2015)",
-                                "Histologic Type ICD-O-3", "Laterality", "Breast Subtype (2010+)",
-                                "ER Status Recode Breast Cancer (1990+)", "PR Status Recode Breast Cancer (1990+)",
-                                "Derived HER2 Recode (2010+)", "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
-                                "Chemotherapy recode (yes, no/unk)", "Marital status at diagnosis",
+                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
+                                "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
+                                "Laterality", "Breast Subtype (2010+)",
+                                "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
+                                "Chemotherapy recode (yes, no/unk)",
                                 "End Calc Vital Status (Adjusted)", "Number of Intervals (Calculated)"])
-df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Behavior code ICD-O-3",
+# according to https://seer.cancer.gov/icd-o-3/sitetype.icdo3.20220429.pdf
+duct_carcinoma_array = ['8500/3: Infiltrating duct carcinoma, NOS', '8501/3: Comedocarcinoma, NOS',
+                        '8502/3: Secretory carcinoma of breast',
+                        '8503/3: Intraductal papillary adenocarcinoma with invasion',
+                        '8504/3: Intracystic carcinoma, NOS', '8507/3: Ductal carcinoma, micropapillary']
+# according to https://seer.cancer.gov/icd-o-3/sitetype.icdo3.20220429.pdf
+lobular_and_other_ductal_array = ['8520/3: Lobular carcinoma, NOS', '8521/3: Infiltrating ductular carcinoma',
+                                  '8522/3: Infiltrating duct and lobular carcinoma',
+                                  '8523/3: Infiltrating duct mixed with other types of carcinoma',
+                                  '8524/3: Infiltrating lobular mixed with other types of carcinoma',
+                                  '8525/3: Polymorphous low grade adenocarcinoma']
+duct_lobular_array = duct_carcinoma_array + lobular_and_other_ductal_array
+
+# filter the ICD-O-3 Hist/behav whose type is DUCT CARCINOM and LOBULAR AND OTHER DUCTAL CA
+df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
+
+# map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
+df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
+
+# map "End Calc Vital Status (Adjusted)" according to map_event_code
+df = Utils.map_one_col_data(df, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
+
+# take a look of the data info again
+print("------------------After filtering and Mapping------------------")
+Utils.print_data_frame_info(df)
+df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
+                                "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)",
                                 "Breast - Adjusted AJCC 6th N (1988-2015)",
-                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS extension (2004-2015)",
-                                "CS lymph nodes (2004-2015)", "CS mets at dx (2004-2015)",
-                                "Histologic Type ICD-O-3", "Laterality", "Breast Subtype (2010+)",
-                                "ER Status Recode Breast Cancer (1990+)",
-                                "PR Status Recode Breast Cancer (1990+)", "Derived HER2 Recode (2010+)",
+                                "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
+                                "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
+                                "Laterality", "Breast Subtype (2010+)",
                                 "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
-                                "Chemotherapy recode (yes, no/unk)", "Marital status at diagnosis"],
-                    columns=["Age recode with <1 year olds", "Behavior code ICD-O-3",
+                                "Chemotherapy recode (yes, no/unk)"],
+                    columns=["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
+                             "ICD-O-3 Hist/behav",
                              "Breast - Adjusted AJCC 6th T (1988-2015)",
                              "Breast - Adjusted AJCC 6th N (1988-2015)",
-                             "Breast - Adjusted AJCC 6th M (1988-2015)", "CS extension (2004-2015)",
-                             "CS lymph nodes (2004-2015)", "CS mets at dx (2004-2015)", "Histologic Type ICD-O-3",
-                             "Laterality", "Breast Subtype (2010+)", "ER Status Recode Breast Cancer (1990+)",
-                             "PR Status Recode Breast Cancer (1990+)", "Derived HER2 Recode (2010+)",
+                             "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
+                             "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
+                             "Laterality", "Breast Subtype (2010+)",
                              "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
-                             "Chemotherapy recode (yes, no/unk)", "Marital status at diagnosis"])
+                             "Chemotherapy recode (yes, no/unk)"])
 for column in df.columns:
     if column:
         print(column)
 
-training_data, testing_data = Utils.train_test_split(df, test_size=0.2)
+training_data, testing_data = train_test_split(df, test_size=0.2)
 print("-----------Training Data-----------")
 print("-----------The row number-----------")
 print(Utils.get_data_frame_row_count(training_data))
@@ -148,8 +172,8 @@ E_train = E_train[sort_idx]
 # has a *huge* impact on model performance. However, we will deal
 # with that later.
 
-params = {"n_layers": 1,
-          "n_nodes": 10,
+params = {"n_layers": 2,
+          "n_nodes": 20,
           "activation": "selu",
           "learning_rate": 0.011,
           "decays": 5.667e-3,
