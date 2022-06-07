@@ -33,7 +33,7 @@ _ = torch.manual_seed(123)
 
 df = Utils.read_from_file("data/breast.csv")
 df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
-                                "Histologic Type ICD-O-3",
+                                "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)", "Breast - Adjusted AJCC 6th N (1988-2015)",
                                 "Breast - Adjusted AJCC 6th M (1988-2015)", "CS Tumor Size/Ext Eval (2004-2015)",
                                 "CS Reg Node Eval (2004-2015)", "CS Mets Eval (2004-2015)",
@@ -45,7 +45,7 @@ df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status 
 # take a look of the data info
 Utils.print_data_frame_info(df)
 
-df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Behavior code ICD-O-3",
+df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)",
                                 "Breast - Adjusted AJCC 6th N (1988-2015)",
                                 "Breast - Adjusted AJCC 6th M (1988-2015)", "CS extension (2004-2015)",
