@@ -127,8 +127,8 @@ X_train = X_scaler.transform(X_train)
 X_test = X_scaler.transform(X_test)
 
 Y_scaler = StandardScaler().fit(Y_train.to_numpy().reshape(-1, 1))
-Y_train = Y_scaler.transform(Y_train)
-Y_test = Y_scaler.transform(Y_test)
+Y_train = Y_scaler.transform(Y_train.to_numpy())
+Y_test = Y_scaler.transform(Y_test.to_numpy())
 Y_train = Y_train.flatten()
 Y_test = Y_test.flatten()
 
