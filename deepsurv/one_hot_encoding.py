@@ -130,7 +130,6 @@ Y_scaler = StandardScaler().fit(Y_train.to_numpy().reshape(-1, 1))
 Y_train = Y_scaler.transform(Y_train)
 Y_test = Y_scaler.transform(Y_test)
 Y_train = Y_train.flatten()
-
 Y_test = Y_test.flatten()
 
 # %% [markdown]
@@ -217,7 +216,7 @@ print(callbacks)
 # %%
 epochs = 3
 history = dsk.fit(X_train, Y_train,
-                  # batch_size=500,
+                  batch_size=n_patients_train,
                   epochs=epochs,
                   callbacks=callbacks,
                   shuffle=False)
