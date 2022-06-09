@@ -106,7 +106,7 @@ def plot_km_recs_antirecs(T, E, recommendation_idx, fig=None, ax=None, xlim=None
         p_value_text = "$p$ < 0.001"
     else:
         p_value_text = f"$p$ = {results.p_value:.4f}"
-    ax.text(T['T'].min()*10, y_pos, p_value_text, fontsize='small')
+    ax.text(T['Number of Intervals (Calculated)'].min()*10, y_pos, p_value_text, fontsize='small')
     
     # Format x-axis ticks here.
     # xticks = np.arange(T['T'].min(), T['T'].max())

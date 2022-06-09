@@ -6,7 +6,8 @@ from sklearn.model_selection import train_test_split
 
 import utilities as Utils
 import deepsurvk
-df = Utils.read_from_file("data/breast.csv")[:500]
+
+df = Utils.read_from_file("data/breast.csv")
 df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
                                 "ICD-O-3 Hist/behav",
                                 "Breast - Adjusted AJCC 6th T (1988-2015)", "Breast - Adjusted AJCC 6th N (1988-2015)",
@@ -35,9 +36,6 @@ df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
 # map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
 df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
 
-
-
-
 # take a look of the data info again
 print("------------------After filtering and Mapping------------------")
 Utils.print_data_frame_info(df)
@@ -63,7 +61,7 @@ for column in df.columns:
     if column:
         print(column)
 
-training_data, testing_data = train_test_split(df, test_size=0.2)
+training_data, testing_data = df, df
 print("-----------Training Data-----------")
 print("-----------The row number-----------")
 print(Utils.get_data_frame_row_count(training_data))
