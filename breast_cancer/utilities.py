@@ -13,6 +13,13 @@ def read_from_file(filepath):
         raise ValueError(form_error_msg("Invalid file extension."))
     return pd.read_csv(filepath)
 
+def drop_column(data,column):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter col_list."))
+    del data[column]
+
 
 def split_data(data, fraction):
     if is_data_frame(data) is False:
