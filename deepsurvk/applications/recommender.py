@@ -94,7 +94,7 @@ def recommender_function(model, X, colum_prefix):
             row[col] = 1
             values.append(model.predict(row.to_frame().T)[0,0])
             row[col] = 0
-        h_j[i,0] = max(values)
+        h_j[i,0] = min(values)
         i += 1
 
 
