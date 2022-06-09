@@ -1,4 +1,16 @@
 from utilities import is_integer, form_error_msg
+import numpy as np
+
+def is_valid_surgery(sur_sum):
+    if sur_sum is False:
+        raise ValueError(form_error_msg("Invalid parameter sur_sum."))
+    return 1 == np.unique(sur_sum)
+
+
+
+
+
+
 
 
 def map_breast_surg_type(code):
@@ -31,6 +43,7 @@ def map_breast_surg_type(code):
     else:
         raise ValueError(form_error_msg("Invalid parameter code."))
 
+
 def map_event_code(event):
     '''
     this map method is based on survival analysis
@@ -41,5 +54,3 @@ def map_event_code(event):
     if event.lower() == "dead":
         return 1
     return 0
-
-

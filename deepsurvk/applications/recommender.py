@@ -10,7 +10,11 @@ __all__ = ['recommender_function',
            'get_recs_antirecs_index']
 
 #%%
-def recommender_function(model, X, treatment_column):
+from breast_utilities import is_valid_surgery
+from utilities import form_error_msg, get_match_prefix_pattern_columns, sum_prefix_pattern_columns
+
+
+def recommender_functon(model, X, treatment_column):
     """
     Calculate the recommender function for a set of patients based on a
     previously fitted model. Implementation corresponds to the one
@@ -69,6 +73,38 @@ def recommender_function(model, X, treatment_column):
 
     return rec_ij
 
+def recommender_function(model, X, colum_prefix):
+    # Validate number of treatments.
+    if is_valid_surgery(sum_prefix_pattern_columns(X, colum_prefix)) is False:
+        raise ValueError(form_error_msg("Invalid parameter test_proportion."))
+
+    matched_columns = get_match_prefix_pattern_columns(X,colum_prefix)
+    X_treatment0 = X.copy(deep=True)
+    h_i=model.predict(X_treatment0)
+
+    X_treatment1 = X.copy(deep=True)
+    h_j = np.empty(shape=[X_treatment1.shape[0], 1])
+    i = 0
+    for index, row in X_treatment1.iterrows():
+        # empty every matched columns
+        for col in matched_columns:
+            row[col] = 0
+        values = []
+        for col in matched_columns:
+            row[col] = 1
+            values.append(model.predict(row.to_frame().T)[0,0])
+            row[col] = 0
+        h_j[i,0] = max(values)
+        i += 1
+
+
+
+
+
+    return h_i - h_j
+
+
+
 
 #%%
 def get_recs_antirecs_index(rec_ij, X, treatment_column):
@@ -110,14 +146,14 @@ def get_recs_antirecs_index(rec_ij, X, treatment_column):
     # If rec_ij was negative, that means that treatment j (i.e., 1)
     # had a higher risk. Thus, treatment i (i.e., 0) was better.
     #
-    recommended_treatment = (rec_ij > 0).astype(np.int32)
+    recommended_treatment = (rec_ij == 0)
 
     # Get groups of patients that were and were not treated according to the
     # model's recommended treatment. Following the paper's nomenclature,
     # these will be recommendation and antirecommendation, respectively.
-    real_treatment = X[treatment_column].values
+    # real_treatment = X[treatment_column].values
 
-    recommendation_idx = np.logical_and(recommended_treatment.reshape((-1,)), real_treatment.reshape((-1,)))
-    antirecommendation_idx = ~recommendation_idx
+    # recommendation_idx = np.logical_and(recommended_treatment.reshape((-1,)), real_treatment.reshape((-1,)))
+    # antirecommendation_idx = ~recommendation_idx
 
-    return recommendation_idx, antirecommendation_idx
+    return recommended_treatment, ~recommended_treatment

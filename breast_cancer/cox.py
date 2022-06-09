@@ -61,21 +61,21 @@ df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Marital status 
                              "Laterality", "Breast Subtype (2010+)",
                              "RX Summ--Surg Prim Site (1998+)", "Radiation recode",
                              "Chemotherapy recode (yes, no/unk)"])
-training_data = df
+data = df
 
 print("-----------Training Data-----------")
 print("-----------The row number-----------")
-print(Utils.get_data_frame_row_count(training_data))
+print(Utils.get_data_frame_row_count(data))
 print("-----------The col number-----------")
-print(Utils.get_data_frame_col_count(training_data))
+print(Utils.get_data_frame_col_count(data))
 print("-----------The column names are-----------")
-print(Utils.get_data_frame_col_names(training_data))
+print(Utils.get_data_frame_col_names(data))
 print("-----------The null value summary-----------")
-print(training_data.isnull().sum())
+print(data.isnull().sum())
 
 # ConvergenceWarning: Column(s) ['ICD-O-3 Hist/behav_8525/3: Polymorphous low grade adenocarcinoma', 'Breast - Adjusted AJCC 6th M (1988-2015)_M0', 'CS Mets Eval (2004-2015)_6', 'Laterality_Bilateral, single primary', 'Laterality_Only one side - side unspecified', 'Laterality_Paired site, but no information concerning laterality', 'RX Summ--Surg Prim Site (1998+)_Local tumor destruction'] have very low variance. This may harm convergence. 1) Are you using formula's? Did you mean to add '-1' to the end. 2) Try dropping this redundant column before fitting if convergence fails.
 # Utils.drop_column(training_data, 'ICD-O-3 Hist/behav_8525/3: Polymorphous low grade adenocarcinoma')
-Utils.drop_column(training_data, 'Breast - Adjusted AJCC 6th M (1988-2015)_M0')
+Utils.drop_column(data, 'Breast - Adjusted AJCC 6th M (1988-2015)_M0')
 # Utils.drop_column(training_data, 'Laterality_Bilateral, single primary')
 # Utils.drop_column(training_data, 'CS Mets Eval (2004-2015)_6')
 # Utils.drop_column(training_data, 'Laterality_Only one side - side unspecified')
@@ -83,7 +83,12 @@ Utils.drop_column(training_data, 'Breast - Adjusted AJCC 6th M (1988-2015)_M0')
 # Utils.drop_column(training_data,'RX Summ--Surg Prim Site (1998+)_Local tumor destruction')
 
 cph = CoxPHFitter(penalizer=0.004,l1_ratio=0.005)
-cph.fit(training_data, duration_col='Number of Intervals (Calculated)', event_col='End Calc Vital Status (Adjusted)',
+cph.fit(data, duration_col='Number of Intervals (Calculated)', event_col='End Calc Vital Status (Adjusted)',
         show_progress=True, step_size=0.96)
-
+'''
+Concordance = 0.64
+Partial AIC = 85456.71
+log-likelihood ratio test = -5612.76 on 90 df
+-log2(p) of ll-ratio test = -0.00
+'''
 cph.print_summary()

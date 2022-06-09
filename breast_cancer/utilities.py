@@ -13,12 +13,46 @@ def read_from_file(filepath):
         raise ValueError(form_error_msg("Invalid file extension."))
     return pd.read_csv(filepath)
 
-def drop_column(data,column):
+
+def drop_column(data, column):
     if is_data_frame(data) is False:
         raise ValueError(form_error_msg("Invalid parameter data."))
     if column is False:
         raise ValueError(form_error_msg("Invalid parameter col_list."))
     del data[column]
+
+
+def sum_given_columns(data, columns):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if is_valid_list(columns) is False:
+        raise ValueError(form_error_msg("Invalid parameter cols."))
+    count = 0
+    for col in columns:
+        count += data[col]
+    return count.to_numpy()
+
+
+def get_match_prefix_pattern_columns(data, column_prefix):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    names_list = get_data_frame_col_names_list(data)
+    if is_valid_list(names_list) is False:
+        raise ValueError(form_error_msg("Invalid inside parameter names_list."))
+    matched_list = []
+    for name in names_list:
+        if name is False:
+            continue
+        if name.startswith(column_prefix):
+            matched_list.append(name)
+    return matched_list
+
+
+def sum_prefix_pattern_columns(data, column_prefix):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    matched_list = get_match_prefix_pattern_columns(data, column_prefix)
+    return sum_given_columns(data, matched_list)
 
 
 def split_data(data, fraction):
