@@ -215,5 +215,4 @@ recommendation_idx, _ = deepsurvk.get_recs_antirecs_index(rec_ij, X_train1, 'RX 
 
 Y_test_original = Y_train1.copy(deep=True)
 Y_test_original['Number of Intervals (Calculated)'] = Y_scaler.inverse_transform(Y_train1)
-E_train1 = Utils.map_one_col_data(E_train1, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
 deepsurvk.plot_km_recs_antirecs(Y_test_original, E_train1, recommendation_idx)
