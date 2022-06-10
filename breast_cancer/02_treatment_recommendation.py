@@ -61,7 +61,7 @@ for column in df.columns:
     if column:
         print(column)
 
-training_data, testing_data = df, df
+training_data, testing_data = df[:500], df[:500]
 print("-----------Training Data-----------")
 print("-----------The row number-----------")
 print(Utils.get_data_frame_row_count(training_data))
