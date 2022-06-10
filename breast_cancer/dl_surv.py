@@ -62,7 +62,7 @@ for column in df.columns:
     if column:
         print(column)
 
-training_data, testing_data = train_test_split(df, test_size=0.2)
+training_data, testing_data = train_test_split(df[:10000], test_size=0.2)
 print("-----------Training Data-----------")
 print("-----------The row number-----------")
 print(Utils.get_data_frame_row_count(training_data))
@@ -88,12 +88,15 @@ print("-----------The X_train row number-----------")
 print(Utils.get_data_frame_row_count(X_train))
 print("-----------The X_train col number-----------")
 print(Utils.get_data_frame_col_count(X_train))
+X_train1 = training_data.drop(["End Calc Vital Status (Adjusted)", "Number of Intervals (Calculated)"], axis=1)
 
 E_train = Utils.filter_col_data(training_data, ["End Calc Vital Status (Adjusted)"])
 print("-----------The E_train row number-----------")
 print(Utils.get_data_frame_row_count(E_train))
 print("-----------The E_train col number-----------")
 print(Utils.get_data_frame_col_count(E_train))
+E_train1 = Utils.map_one_col_data(E_train, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
+
 E_train = pd.Series(np.where(E_train.iloc[:, 0].values == "Dead", 1, 0), index=E_train.index).T.to_numpy()
 
 Y_train = Utils.filter_col_data(training_data, ["Number of Intervals (Calculated)"])
@@ -101,6 +104,7 @@ print("-----------The Y_train row number-----------")
 print(Utils.get_data_frame_row_count(Y_train))
 print("-----------The Y_train col number-----------")
 print(Utils.get_data_frame_col_count(Y_train))
+Y_train1 = Y_train
 
 X_test = testing_data.drop(["End Calc Vital Status (Adjusted)", "Number of Intervals (Calculated)"], axis=1)
 print("-----------The X_train row number-----------")
@@ -214,7 +218,7 @@ print(callbacks)
 # After this, we are ready to actually fit our model (as any Keras model).
 
 # %%
-epochs = 3
+epochs = 2
 history = dsk.fit(X_train, Y_train,
                   batch_size=n_patients_train,
                   epochs=epochs,
@@ -254,3 +258,11 @@ print(f"c-index of training dataset = {c_index_train}")
 Y_pred_test = np.exp(-dsk.predict(X_test))
 c_index_test = deepsurvk.concordance_index(Y_test, Y_pred_test, E_test)
 print(f"c-index of testing dataset = {c_index_test}")
+
+rec_ij = deepsurvk.recommender_function(dsk, X_train1, 'RX Summ--Surg Prim Site')
+recommendation_idx, _ = deepsurvk.get_recs_antirecs_index(rec_ij, X_test, 'RX Summ--Surg Prim Site')
+
+Y_test_original = Y_train1.copy(deep=True)
+Y_test_original['Number of Intervals (Calculated)'] = Y_scaler.inverse_transform(Y_train1)
+# E_train1 = Utils.map_one_col_data(E_train1, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
+deepsurvk.plot_km_recs_antirecs(Y_test_original, E_train1, recommendation_idx)

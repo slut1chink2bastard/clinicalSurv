@@ -94,10 +94,9 @@ def recommender_function(model, X, colum_prefix):
         if array is None:
             array = model.predict(X)
         else:
-            array = np.append(array,model.predict(X),axis=1)
+            array = np.append(array, model.predict(X), axis=1)
         X[matched_column] = 0
-    h_j = array.min(axis=1)
-    h_j = np.transpose(h_j)
+    h_j = array.min(axis=1).reshape(X.shape[0], 1)
     return h_i - h_j
 
 
