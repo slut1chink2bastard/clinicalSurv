@@ -38,6 +38,7 @@ import pathlib
 import numpy as np
 
 import tensorflow as tf
+from keras.utils.vis_utils import plot_model
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense, Dropout, ActivityRegularization
 from tensorflow.keras.optimizers import Nadam
@@ -252,12 +253,13 @@ callbacks = [tf.keras.callbacks.TerminateOnNaN(),
 # since order is important in predicting ranked survival.
 
 # %%
-epochs = 500
+epochs = 50
 history = model.fit(X_train, Y_train, 
                     batch_size=n_patients_train, 
                     epochs=epochs, 
                     callbacks=callbacks,
                     shuffle=False)
+plot_model(model, to_file='model.png')
 
 # %% [markdown]
 # We can see how the loss changed with the number of epochs.
