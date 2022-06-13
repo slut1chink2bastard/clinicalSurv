@@ -13,6 +13,7 @@
 #     name: python3
 # ---
 
+
 # %% [markdown]
 # Before we begin, we will change a few settings to make the notebook look a bit prettier
 
