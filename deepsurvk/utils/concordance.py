@@ -8,7 +8,8 @@ from lifelines.utils import concordance_index as c_index
 
 __all__ = ['concordance_index']
 
-#%%
+
+# %%
 def concordance_index(y_true, y_pred, E):
     """
     Computes the concordance index (aka c-index).

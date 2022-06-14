@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 
 import utilities as Utils
 import deepsurvk
+
 df = Utils.read_from_file("data/breast.csv")
 df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
                                 "ICD-O-3 Hist/behav",
@@ -34,8 +35,6 @@ df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
 
 # map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
 df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
-
-
 
 # take a look of the data info again
 print("------------------After filtering and Mapping------------------")

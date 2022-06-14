@@ -82,7 +82,7 @@ Utils.drop_column(data, 'Breast - Adjusted AJCC 6th M (1988-2015)_M0')
 # Utils.drop_column(training_data, 'Laterality_Paired site, but no information concerning laterality')
 # Utils.drop_column(training_data,'RX Summ--Surg Prim Site (1998+)_Local tumor destruction')
 
-cph = CoxPHFitter(penalizer=0.004,l1_ratio=0.005)
+cph = CoxPHFitter(penalizer=0.004, l1_ratio=0.005)
 cph.fit(data, duration_col='Number of Intervals (Calculated)', event_col='End Calc Vital Status (Adjusted)',
         show_progress=True, step_size=0.96)
 '''

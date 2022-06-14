@@ -9,8 +9,7 @@ import seaborn as sns
 
 __all__ = ['plot_loss']
 
-
-#%%
+# %%
 # A few tweeks to make plots pretty.
 
 sns.set(style="whitegrid")
@@ -21,7 +20,7 @@ mpl.rcParams['font.family'] = "sans-serif"
 plt.rc('axes.spines', top=False, right=False)
 
 
-#%%
+# %%
 def plot_loss(history):
     """
     Plot loss progression.

@@ -15,11 +15,10 @@ from tensorflow.keras.regularizers import l2
 __all__ = ['DeepSurvK', 'negative_log_likelihood', 'common_callbacks']
 
 
-#%%
+# %%
 def DeepSurvK(n_features=None,
               E=None,
               **params):
-
     """
     Create a Keras model using the DeepSurv architecture, as originally
     proposed in [1].
@@ -73,98 +72,100 @@ def DeepSurvK(n_features=None,
     [2] https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Nadam
     [3] https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/SGD
     """
-    
+
     # Empty parameter dictionary into variables for easier use.
     # At the same time, define defaults.
     if 'n_layers' in params:
         n_layers = params['n_layers']
     else:
-        n_layers=2
-        
+        n_layers = 2
+
     if 'n_nodes' in params:
         n_nodes = params['n_nodes']
     else:
-        n_nodes=25
-        
+        n_nodes = 25
+
     if 'activation' in params:
         activation = params['activation']
     else:
-        activation='relu'
-        
+        activation = 'relu'
+
     if 'learning_rate' in params:
         learning_rate = params['learning_rate']
     else:
-        learning_rate=0.01
-        
+        learning_rate = 0.01
+
     if 'decay' in params:
         decay = params['decay']
     else:
-        decay=1e-4
-        
+        decay = 1e-4
+
     if 'momentum' in params:
         momentum = params['momentum']
     else:
-        momentum=0.5
-        
+        momentum = 0.5
+
     if 'l2_reg' in params:
         l2_reg = params['l2_reg']
     else:
-        l2_reg=15
-        
+        l2_reg = 15
+
     if 'dropout' in params:
         dropout = params['dropout']
     else:
-        dropout=0.1
-        
+        dropout = 0.1
+
     if 'optimizer' in params:
         optimizer = params['optimizer']
     else:
-        optimizer='nadam'
-    
-    
+        optimizer = 'nadam'
+
     # Validate inputs.
     if n_features is None:
         raise ValueError("n_features is required input.")
-    
+
     if E is None:
         raise ValueError("E is a required input.")
-        
+
     if activation not in ['relu', 'selu']:
         raise ValueError(f"{activation} is not a valid activation function.")
-        
+
     if optimizer not in ['nadam', 'sgd']:
         raise ValueError(f"{optimizer} is not a valid optimizer.")
-        
-        
+
     # Construct the (sequential) model.
     model = Sequential()
-    
+
     # Input layer.
-    model.add(Dense(units=n_features, activation=activation, kernel_initializer='glorot_uniform', input_shape=(n_features,), name='InputLayer'))
+    model.add(
+        Dense(units=n_features, activation=activation, kernel_initializer='glorot_uniform', input_shape=(n_features,),
+              name='InputLayer'))
     model.add(Dropout(dropout, name='DroputInput'))
-    
+
     # Hidden layers are identical between them. 
     # Therefore, we will create them in a loop.
     for n_layer in range(n_layers):
-        model.add(Dense(units=n_nodes, activation=activation, kernel_initializer='glorot_uniform', name=f'HiddenLayer{n_layer+1}'))
-        model.add(Dropout(dropout, name=f'Dropout{n_layer+1}'))
-        
+        model.add(Dense(units=n_nodes, activation=activation, kernel_initializer='glorot_uniform',
+                        name=f'HiddenLayer{n_layer + 1}'))
+        model.add(Dropout(dropout, name=f'Dropout{n_layer + 1}'))
+
     # Output layer.
-    model.add(Dense(units=1, activation='linear', kernel_initializer='glorot_uniform', kernel_regularizer=l2(l2_reg), name='OutputLayer'))
+    model.add(Dense(units=1, activation='linear', kernel_initializer='glorot_uniform', kernel_regularizer=l2(l2_reg),
+                    name='OutputLayer'))
     model.add(ActivityRegularization(l2=l2_reg, name='ActivityRegularization'))
-    
+
     # Define the optimizer
     if optimizer == 'nadam':
         optimizer_ = Nadam(learning_rate=learning_rate, decay=decay)
     elif optimizer == 'sgd':
         optimizer_ = SGD(learning_rate=learning_rate, momentum=momentum, nesterov=True)
-    
+
     # Define the loss.
     loss_ = negative_log_likelihood(E)
-    
+
     # Compile the model.
-    model.compile(loss=loss_, optimizer=optimizer_)        
-    
+    model.compile(loss=loss_, optimizer=optimizer_)
+
     return model
 
 
@@ -196,9 +197,9 @@ def negative_log_likelihood(E):
     [2] https://keras.io/api/losses/#creating-custom-losses
     [3] https://github.com/keras-team/keras/issues/2121
     """
+
     def loss(y_true, y_pred):
-        
-        hazard_ratio = tf.math.exp(y_pred)        
+        hazard_ratio = tf.math.exp(y_pred)
         log_risk = tf.math.log(tf.math.cumsum(hazard_ratio))
         uncensored_likelihood = tf.transpose(y_pred) - log_risk
         censored_likelihood = uncensored_likelihood * E
@@ -211,15 +212,15 @@ def negative_log_likelihood(E):
         # num_observed_events = tf.math.cumsum(E)
         # num_observed_events = tf.cast(num_observed_events, dtype=tf.float32)
         num_observed_events = tf.constant(1, dtype=tf.float32)
-        
-        neg_likelihood = neg_likelihood_ / num_observed_events        
-        
+
+        neg_likelihood = neg_likelihood_ / num_observed_events
+
         return neg_likelihood
-    
+
     return loss
 
 
-#%%
+# %%
 def common_callbacks():
     """
     Create a list of Keras callbacks [1] that are commonly used by DeepSurvK.
