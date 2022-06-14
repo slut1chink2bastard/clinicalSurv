@@ -56,7 +56,12 @@ df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Marital status 
 Y_train = Utils.filter_col_data(df, ["End Calc Vital Status (Adjusted)", "Number of Intervals (Calculated)"])
 X_train = df.drop(["End Calc Vital Status (Adjusted)", "Number of Intervals (Calculated)"], axis=1)
 Y_train = Utils.map_one_col_data(Y_train, "End Calc Vital Status (Adjusted)", br_utils.map_event_code)
-
+'''
+The S(t) is derived from h(t|X), 
+based on https://www.andrew.cmu.edu/user/georgech/Introduction%20to%20Survival%20Analysis%20Math.pdf
+Just some integration and sigma opeartions
+reference https://github.com/havakv/pycox
+'''
 model = tf.keras.models.load_model('test.h5', compile=False)
 max_duration = np.inf
 base_haz = Y_train.assign(expg=np.exp(model.predict(X_train))).groupby("Number of Intervals (Calculated)").agg(

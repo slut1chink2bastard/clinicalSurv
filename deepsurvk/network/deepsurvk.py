@@ -75,15 +75,10 @@ def DeepSurvK(n_features=None,
 
     # Empty parameter dictionary into variables for easier use.
     # At the same time, define defaults.
-    if 'n_layers' in params:
-        n_layers = params['n_layers']
+    if 'nn_topo' in params:
+        nn_topo = params['nn_topo']
     else:
-        n_layers = 2
-
-    if 'n_nodes' in params:
-        n_nodes = params['n_nodes']
-    else:
-        n_nodes = 25
+        nn_topo = [20,20]
 
     if 'activation' in params:
         activation = params['activation']
@@ -144,8 +139,8 @@ def DeepSurvK(n_features=None,
 
     # Hidden layers are identical between them. 
     # Therefore, we will create them in a loop.
-    for n_layer in range(n_layers):
-        model.add(Dense(units=n_nodes, activation=activation, kernel_initializer='glorot_uniform',
+    for n_layer in len(range(nn_topo)):
+        model.add(Dense(units=nn_topo[n_layer], activation=activation, kernel_initializer='glorot_uniform',
                         name=f'HiddenLayer{n_layer + 1}'))
         model.add(Dropout(dropout, name=f'Dropout{n_layer + 1}'))
 
