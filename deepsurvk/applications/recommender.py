@@ -83,24 +83,20 @@ def recommender_function(model, X, colum_prefix):
     h_i=model.predict(X_treatment0)
 
     X_treatment1 = X.copy(deep=True)
-    h_j = np.empty(shape=[X_treatment1.shape[0], 1])
+    matched_columns_count = len(matched_columns)
+    h_j = np.empty(shape=[X.shape[0], matched_columns_count])
+    for matched_column in matched_columns:
+        X[matched_column] = 0
     i = 0
-    for index, row in X_treatment1.iterrows():
-        # empty every matched columns
-        for col in matched_columns:
-            row[col] = 0
-        values = []
-        for col in matched_columns:
-            row[col] = 1
-            values.append(model.predict(row.to_frame().T)[0,0])
-            row[col] = 0
-        h_j[i,0] = min(values)
-        i += 1
-
-
-
-
-
+    array = None
+    for matched_column in matched_columns:
+        X[matched_column] = 1
+        if array is None:
+            array = model.predict(X)
+        else:
+            array = np.append(array, model.predict(X), axis=1)
+        X[matched_column] = 0
+    h_j = array.min(axis=1).reshape(X.shape[0], 1)
     return h_i - h_j
 
 

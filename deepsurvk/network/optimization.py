@@ -12,7 +12,7 @@ import deepsurvk
 __all__ = ['optimize_hp']
 
 
-#%%
+# %%
 def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbose=True, **params):
     """
     Optimize the (hyper)parameters of a DeepSurvK model using 
@@ -64,7 +64,7 @@ def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbos
     ----------
     [1] Katzman, Jared L., et al. "DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network." BMC medical research methodology 18.1 (2018): 24.
     """
-    
+
     # Check if number of epochs was defined.
     if 'epochs' in params:
         # If yes, extract its value (and remove it from the dictionary,
@@ -72,11 +72,11 @@ def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbos
         epochs = params['epochs'][0]
         params.pop('epochs')
         print(params)
-        
+
     else:
         # If not, set a default value of 1000.
         epochs = 1000
-        
+
     # Get parameter list (i.e., a list of dictionaries).
     params_list = deepsurvk.get_param_list(params, mode, n_iter)
 
@@ -85,22 +85,21 @@ def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbos
     n_combinations = len(params_list)
     if verbose:
         print(f"Optimizing {n_combinations} parameter combinations.")
-    
-    
+
     if verbose:
         started_at = datetime.datetime.now().replace(microsecond=0)
-        print ("Optimization started at: ", end='', flush=True)
-        print (started_at.strftime("%Y-%m-%d %H:%M:%S"))
+        print("Optimization started at: ", end='', flush=True)
+        print(started_at.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Initialize important variables.
     c_index_mean = []
     c_index_std = []
-    
+
     # Loop through all possible parameter combinations.
     for ii, params_curr in enumerate(params_list):
 
         if verbose:
-            print(f"Parameter set {ii+1}/{n_combinations}...")
+            print(f"Parameter set {ii + 1}/{n_combinations}...")
             print(params_curr)
 
         # Create RepatedKFold object.        
@@ -108,18 +107,18 @@ def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbos
 
         # To store results.
         c_index_param = []
-        
+
         # Loop through different data partitions.
         for jj, (train_index, val_index) in enumerate(rkf.split(X, Y)):
-            
+
             if verbose:
-                print(f"\tIteration {jj+1}/{n_splits*n_repeats}...", end='', flush=True)
-                
+                print(f"\tIteration {jj + 1}/{n_splits * n_repeats}...", end='', flush=True)
+
             # Perform data partition.
-            X_train, X_val = X.iloc[train_index,:], X.iloc[val_index,:]
-            Y_train, Y_val = Y.iloc[train_index,:], Y.iloc[val_index,:]
-            E_train, E_val = E.iloc[train_index,:], E.iloc[val_index,:]
-    
+            X_train, X_val = X.iloc[train_index, :], X.iloc[val_index, :]
+            Y_train, Y_val = Y.iloc[train_index, :], Y.iloc[val_index, :]
+            E_train, E_val = E.iloc[train_index, :], E.iloc[val_index, :]
+
             # Create DSK model (with current loop's parameters)
             dsk = deepsurvk.DeepSurvK(n_features=n_features, E=E_train, **params_curr)
             loss = deepsurvk.negative_log_likelihood(E_train)
@@ -128,38 +127,36 @@ def optimize_hp(X, Y, E, mode='grid', n_splits=3, n_repeats=5, n_iter=25, verbos
 
             # Fit model.
             n_patients_train = X_train.shape[0]
-            dsk.fit(X_train, Y_train, 
+            dsk.fit(X_train, Y_train,
                     batch_size=n_patients_train,
-                    epochs=epochs, 
+                    epochs=epochs,
                     callbacks=callbacks,
                     shuffle=False)
-        
+
             # Generate predictions.
             Y_pred_val = np.exp(-dsk.predict(X_val))
-            
+
             # Compute quality metric (c-index)
             c = deepsurvk.concordance_index(Y_val, Y_pred_val, E_val)
             c_index_param.append(c)
-            
+
             if verbose:
                 print(f"\tc-index = {c}")
 
         # Calculate c-index mean and STD for current parameter set.
         c_index_mean.append(np.nanmean(c_index_param))
         c_index_std.append(np.nanstd(c_index_param))
-        
-        
+
     if verbose:
         ended_at = datetime.datetime.now().replace(microsecond=0)
-        print ("Optimization ended at: ", end='', flush=True)
-        print (ended_at.strftime("%Y-%m-%d %H:%M:%S"))
-        print(f"Optimization took {ended_at-started_at}")
-        
-    
+        print("Optimization ended at: ", end='', flush=True)
+        print(ended_at.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"Optimization took {ended_at - started_at}")
+
     # Find parameter combination with highest c-index.
     c_index_mean_max = max(c_index_mean)
     idx = c_index_mean.index(c_index_mean_max)
 
     best_params = params_list[idx]
-    
+
     return best_params

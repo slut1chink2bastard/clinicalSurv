@@ -1,11 +1,12 @@
-import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-import breast_utilities as br_utils
+import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-import utilities as Utils
+import breast_utilities as br_utils
 import deepsurvk
+import utilities as Utils
+
 df = Utils.read_from_file("data/breast.csv")
 df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
                                 "ICD-O-3 Hist/behav",
@@ -34,8 +35,6 @@ df = Utils.select_data_from_values(df, "ICD-O-3 Hist/behav", duct_lobular_array)
 
 # map "RX Summ--Surg Prim Site (1998+)" according to map_breast_surg_type
 df = Utils.map_one_col_data(df, "RX Summ--Surg Prim Site (1998+)", br_utils.map_breast_surg_type)
-
-
 
 # take a look of the data info again
 print("------------------After filtering and Mapping------------------")
@@ -170,8 +169,7 @@ E_train = E_train[sort_idx]
 # has a *huge* impact on model performance. However, we will deal
 # with that later.
 
-params = {"n_layers": 2,
-          "n_nodes": 20,
+params = {"nn_topo": [30,20,10],
           "activation": "selu",
           "learning_rate": 0.011,
           "decays": 5.667e-3,
