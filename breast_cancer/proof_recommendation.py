@@ -176,12 +176,10 @@ E_train = E_train[sort_idx]
 # has a *huge* impact on model performance. However, we will deal
 # with that later.
 
-params = {"n_layers": 2,
-          "n_nodes": 20,
+params = {"nn_topo": [30,20,10],
           "activation": "selu",
           "learning_rate": 0.011,
           "decays": 5.667e-3,
-          "momentum": 0.887,
           "l2_reg": 6.551,
           "dropout": 0.661,
           "optimizer": "nadam"}
@@ -196,7 +194,7 @@ dsk.compile(loss=loss)
 
 callbacks = deepsurvk.common_callbacks()
 
-epochs = 1
+epochs = 512
 history = dsk.fit(X_train, Y_train,
                   batch_size=n_patients_train,
                   epochs=epochs,

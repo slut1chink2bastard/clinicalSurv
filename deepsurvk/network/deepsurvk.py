@@ -139,7 +139,7 @@ def DeepSurvK(n_features=None,
 
     # Hidden layers are identical between them. 
     # Therefore, we will create them in a loop.
-    for n_layer in len(range(nn_topo)):
+    for n_layer in range(len(nn_topo)):
         model.add(Dense(units=nn_topo[n_layer], activation=activation, kernel_initializer='glorot_uniform',
                         name=f'HiddenLayer{n_layer + 1}'))
         model.add(Dropout(dropout, name=f'Dropout{n_layer + 1}'))

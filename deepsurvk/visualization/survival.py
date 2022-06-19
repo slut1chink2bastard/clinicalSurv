@@ -84,7 +84,7 @@ def plot_km_recs_antirecs(T, E, recommendation_idx, fig=None, ax=None, xlim=None
         kmf.fit(T_curr, E_curr, label=label.capitalize())
 
         # Plot KM curve.
-        ax = kmf.plot(ax=ax, linewidth=5, legend=True, loc=slice(0.,60.))
+        ax = kmf.plot(ax=ax, linewidth=5, legend=True)
         ax.legend(loc='best', frameon=False, fontsize='small')
 
         kmf_list.append(kmf)
@@ -102,7 +102,7 @@ def plot_km_recs_antirecs(T, E, recommendation_idx, fig=None, ax=None, xlim=None
         y_pos = 0.1 + min(ylim) + ((max(ylim) - min(ylim)) * 0.1)
 
     p_value_text = f"$p$ = {results.p_value:.4f}"
-    ax.text(T['Number of Intervals (Calculated)'].min() * 10, y_pos, p_value_text, fontsize='small')
+    ax.text(T['Number of Intervals (Calculated)'].min(), y_pos, p_value_text, fontsize='small')
 
     # Format x-axis ticks here.
     # xticks = np.arange(T['T'].min(), T['T'].max())

@@ -173,7 +173,6 @@ params = {"nn_topo": [30,20,10],
           "activation": "selu",
           "learning_rate": 0.011,
           "decays": 5.667e-3,
-          "momentum": 0.887,
           "l2_reg": 6.551,
           "dropout": 0.661,
           "optimizer": "nadam"}
@@ -212,7 +211,7 @@ print(callbacks)
 # After this, we are ready to actually fit our model (as any Keras model).
 
 # %%
-epochs = 3
+epochs = 512
 history = dsk.fit(X_train, Y_train,
                   batch_size=n_patients_train,
                   epochs=epochs,
