@@ -7,6 +7,10 @@ import breast_utilities as br_utils
 import deepsurvk
 import utilities as Utils
 
+from keras_visualizer import visualizer
+
+
+
 df = Utils.read_from_file("data/breast.csv")
 df = Utils.filter_col_data(df, ["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
                                 "ICD-O-3 Hist/behav",
@@ -181,6 +185,7 @@ n_features = X_train.shape[1]
 n_patients_train = X_train.shape[0]
 # %%
 dsk = deepsurvk.DeepSurvK(n_features=n_features, E=E_train, **params)
+visualizer(dsk, format='png', view=True)
 
 # %% [markdown]
 # Since DeepSurvK is just a Keras model, we can take advantage of all the
