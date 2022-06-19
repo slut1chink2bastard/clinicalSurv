@@ -128,6 +128,6 @@ def plot_km_recs_antirecs(T, E, recommendation_idx, fig=None, ax=None, xlim=None
     # X-axis label is set here to be sure it is show correctly even if
     # patients at risk will be shown.
     ax.set_xlabel("Time", weight='bold')
-    ax.get_figure().savefig('temp.png', dpi=fig.dpi)
+    ax.get_figure().savefig('surv_curv_recom.png', dpi=fig.dpi)
 
     return fig, ax
