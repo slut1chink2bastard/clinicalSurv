@@ -109,6 +109,14 @@ def get_data_frame_row_count(data_frame):
     return data_frame.shape[0]
 
 
+def is_col_exist(data, column):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    return  column in data.columns
+
+
 def get_data_frame_col_count(data_frame):
     if is_data_frame(data_frame) is False:
         raise ValueError(form_error_msg("Invalid parameter data."))
@@ -136,6 +144,71 @@ def get_col_values(data, column):
         raise ValueError(form_error_msg("Invalid parameter column."))
     return data[column].values
 
+def get_data_col_info(data):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    col_list = get_data_frame_col_names_list(data)
+    for col in col_list:
+        print(col)
+        merge_print_enum_two_series(data[col].value_counts(normalize=False),data[col].value_counts(normalize=True)*100)
+
+
+
+def get_data_all_col_percent(data):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    col_list = get_data_frame_col_names_list(data)
+    for col in col_list:
+        print("-------get_col_item_occurrence-------")
+        print(col)
+        get_col_item_percent(data,col)
+
+def get_col_item_percent(data,column):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    if is_col_exist(data,column) is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    return print_enum_series(data[column].value_counts(normalize=True)*100)
+
+def get_data_all_col_occurence(data):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    col_list = get_data_frame_col_names_list(data)
+    for col in col_list:
+        print("-------get_col_item_occurrence-------")
+        print(col)
+        get_col_item_occurrence(data,col)
+
+
+def get_col_item_occurrence(data,column):
+    if is_data_frame(data) is False:
+        raise ValueError(form_error_msg("Invalid parameter data."))
+    if column is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    if is_col_exist(data,column) is False:
+        raise ValueError(form_error_msg("Invalid parameter column."))
+    return print_enum_series(data[column].value_counts(normalize=False)*100)
+
+
+def merge_print_enum_two_series(seriesA, seriesB):
+    if is_series(seriesA) is False or is_series(seriesB) is False:
+        raise ValueError(form_error_msg("Invalid parameter series."))
+    if seriesA.size != seriesB.size:
+        raise ValueError(form_error_msg("incompatible series."))
+    dictA = seriesA.to_dict()
+    dictB = seriesB.to_dict()
+    for key in dictA:
+        print('index: ', key, 'valueA: ', dictA[key], 'valueB: ', dictB[key])
+
+
+
+def print_enum_series(series):
+    if is_series(series) is False:
+        raise ValueError(form_error_msg("Invalid parameter series."))
+    for i, v in series.items():
+        print('index: ', i, 'value: ', v)
 
 def filter_col_data(data, cols_array):
     if is_data_frame(data) is False:
