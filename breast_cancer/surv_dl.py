@@ -43,6 +43,12 @@ df["RX Summ--Surg Prim Site (1998+)"].value_counts(normalize=False)
 Utils.get_data_col_info(df)
 # take a look of the data info again
 print("------------------After filtering and Mapping------------------")
+train, test = train_test_split(df, test_size=0.2)
+print("------------------train data first------------------")
+Utils.get_data_col_info(train)
+print("------------------test data second------------------")
+Utils.get_data_col_info(test)
+print("------------------whole data third------------------")
 Utils.print_data_frame_info(df)
 df = pd.get_dummies(df, prefix=["Age recode with <1 year olds", "Marital status at diagnosis", "Grade (thru 2017)",
                                 "ICD-O-3 Hist/behav",
