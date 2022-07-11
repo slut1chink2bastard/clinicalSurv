@@ -94,6 +94,7 @@ def plot_km_recs_antirecs(T, E, recommendation_idx, fig=None, ax=None, xlim=None
     # Perform statistical analysis (log-rank test).
     results = lifelines.statistics.logrank_test(T_list[0], T_list[1], C_list[0], C_list[1], alpha=0.95)
     results.print_summary(style='ascii', decimals=4)
+    print("the log-rank test statistic value is {0}".format(results.test_statistic))
 
     # Calculate p-value text position and display.
     if ylim == None:
